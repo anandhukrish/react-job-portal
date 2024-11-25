@@ -36,13 +36,13 @@ export async function addNewCompany(
   const fileName = `logo-${random}-${companyData?.name}`;
 
   const { error: storageError } = await supabase.storage
-    .from("company-logo")
+    .from("company_logo")
     .upload(fileName, companyData?.logo);
 
   if (storageError)
     return { data: null, error: "Error uploading Company Logo" };
 
-  const logo_url = `${supabaseUrl}/storage/v1/object/public/company-logo/${fileName}`;
+  const logo_url = `${supabaseUrl}/storage/v1/object/public/company_logo/${fileName}`;
 
   const { data, error } = await supabase
     .from("companies")

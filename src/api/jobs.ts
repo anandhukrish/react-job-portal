@@ -154,7 +154,7 @@ export async function getMyJobs(
   const { data, error } = await supabase
     .from("jobs")
     .select("*, company: companies(name,logo_url)")
-    .eq("recruiter_id", recruiter_id!)
+    .eq("recuirter_id", recruiter_id!)
     .returns<SingleJobQueryResponse[]>();
 
   if (error) {

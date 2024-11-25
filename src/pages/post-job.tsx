@@ -57,10 +57,18 @@ const PostJob = () => {
   } = useFetch<Jobs, undefined, [Partial<Jobs>]>(addNewJob);
 
   const onSubmit = (data: Schema) => {
-    fnCreateJob({
-      ...data,
+    const newJob = {
+      title: data.title,
+      description: data.description,
+      location: data.location,
+      requirements: data.requirements,
+      company: Number(data.company_id),
       recuirter_id: user!.id as string,
       isOpen: true,
+    };
+
+    fnCreateJob({
+      ...newJob,
     });
   };
 

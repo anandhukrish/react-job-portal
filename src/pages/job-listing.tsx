@@ -7,7 +7,7 @@ import JobCard from "../components/job-card";
 import { JobQueryResponse } from "../types/relation.types";
 
 const JobListing = () => {
-  const { isLoaded } = useUser();
+  const { isLoaded, user } = useUser();
 
   const {
     fn: getJobs,
@@ -40,7 +40,7 @@ const JobListing = () => {
               job={job}
               key={job.id}
               savedInit={job.saved ? job.saved.length > 0 : false}
-              isMyJob={false}
+              isMyJob={user?.id === job.recuirter_id}
               onJobAction={getJobs}
             />
           ))}
