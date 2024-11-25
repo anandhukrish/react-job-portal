@@ -4,16 +4,17 @@ import { useUser } from "@clerk/clerk-react";
 import { BarLoader } from "react-spinners";
 import JobCard from "./job-card";
 import { useEffect } from "react";
+import { SingleJobQueryResponse } from "../types/relation.types";
 
 const CreatedJobs = () => {
   const { user } = useUser();
 
   const {
-    loading: loadingCreatedJobs,
+    isLoading: loadingCreatedJobs,
     data: createdJobs,
     fn: fnCreatedJobs,
-  } = useFetch(getMyJobs, {
-    recruiter_id: user.id,
+  } = useFetch<SingleJobQueryResponse[], { recruiter_id: string }>(getMyJobs, {
+    recruiter_id: user!.id,
   });
 
   useEffect(() => {

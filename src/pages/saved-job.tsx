@@ -9,7 +9,7 @@ const SavedJobs = () => {
   const { isLoaded } = useUser();
 
   const {
-    loading: loadingSavedJobs,
+    isLoading: loadingSavedJobs,
     data: savedJobs,
     fn: fnSavedJobs,
   } = useFetch(getSavedJobs);

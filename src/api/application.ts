@@ -1,6 +1,6 @@
 import supabaseClient, { supabaseUrl } from "../utils/supabase";
 import { Application, StatusEnum } from "../types/supabase.types";
-import { ApiResponse } from "../types/relation.types";
+import { ApiResponse, ApplicationResponse } from "../types/relation.types";
 type FileBody = File | Blob | Buffer;
 
 export interface ApplyJob
@@ -72,17 +72,24 @@ export async function updateApplicationStatus(
   return { data, error: null };
 }
 
-export async function getApplications(token, { user_id }) {
-  const supabase = await supabaseClient(token);
+export async function getApplications(
+  token: string | null | undefined,
+  options?: { user_id: string }
+): Promise<ApiResponse<ApplicationResponse[]>> {
+  const supabase = await supabaseClient(token!);
+
+  const { user_id } = options || {};
+
   const { data, error } = await supabase
     .from("applications")
-    .select("*, job:jobs(title, company:companies(name))")
-    .eq("candidate_id", user_id);
+    .select("*, job_details:jobs(title, company:companies(name))")
+    .eq("candidate_id", user_id!)
+    .returns<ApplicationResponse[]>();
 
   if (error) {
     console.error("Error fetching Applications:", error);
-    return null;
+    return { data: null, error: error.message };
   }
 
-  return data;
+  return { data, error: null };
 }

@@ -4,16 +4,17 @@ import { useEffect } from "react";
 import { getApplications } from "../api/application";
 import { useFetch } from "../hooks/useFetch";
 import { BarLoader } from "react-spinners";
+import { ApplicationResponse } from "../types/relation.types";
 
 const CreatedApplications = () => {
   const { user } = useUser();
 
   const {
-    loading: loadingApplications,
+    isLoading: loadingApplications,
     data: applications,
     fn: fnApplications,
-  } = useFetch(getApplications, {
-    user_id: user.id,
+  } = useFetch<ApplicationResponse[], { user_id: string }>(getApplications, {
+    user_id: user!.id,
   });
 
   useEffect(() => {

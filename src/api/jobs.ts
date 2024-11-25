@@ -1,4 +1,4 @@
-import { ApiResponse } from "./../types/relation.types";
+import { ApiResponse, SavedJobsResponse } from "./../types/relation.types";
 import {
   JobQueryResponse,
   SingleJobQueryResponse,
@@ -99,92 +99,110 @@ export const getSingleJob = async (
 };
 
 export const updateJobHiringStatus = async (
-  token: string,
-  { job_id }: { job_id: number },
-  isOpen: boolean
-) => {
-  const supabase = await supabaseClient(token);
+  token: string | null | undefined,
+  options?: { job_id: number },
+  isOpen?: boolean
+): Promise<ApiResponse<Jobs>> => {
+  const supabase = await supabaseClient(token!);
+
+  const { job_id } = options || {};
 
   const { data, error } = await supabase
     .from("jobs")
     .update({ isOpen })
-    .eq("id", job_id)
-    .select();
+    .eq("id", job_id!)
+    .select()
+    .returns<Jobs>();
 
   if (error) {
     console.log("err", error);
-    return data;
+    return { data: null, error: error.message };
   }
-  return data;
+  return { data, error: null };
 };
 
 export async function addNewJob(
   token: string | null | undefined,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  options = {},
-  jobData: Partial<Jobs>
-) {
+  _options = {},
+  jobData?: Partial<Jobs>
+): Promise<ApiResponse<Jobs>> {
   const supabase = await supabaseClient(token!);
 
   const { data, error } = await supabase
     .from("jobs")
-    .insert([jobData])
-    .select();
+    .insert([jobData!])
+    .select()
+    .returns<Jobs>();
 
   if (error) {
     console.error(error);
-    throw new Error("Error Creating Job");
+    return { data: null, error: error.message };
   }
 
-  return data;
+  return { data, error: null };
 }
 
 // get my created jobs
-export async function getMyJobs(token, { recruiter_id }) {
-  const supabase = await supabaseClient(token);
+export async function getMyJobs(
+  token: string | null | undefined,
+  options?: { recruiter_id: string }
+): Promise<ApiResponse<SingleJobQueryResponse[]>> {
+  const supabase = await supabaseClient(token!);
+  const { recruiter_id } = options || {};
 
   const { data, error } = await supabase
     .from("jobs")
     .select("*, company: companies(name,logo_url)")
-    .eq("recruiter_id", recruiter_id);
+    .eq("recruiter_id", recruiter_id!)
+    .returns<SingleJobQueryResponse[]>();
 
   if (error) {
     console.error("Error fetching Jobs:", error);
-    return null;
+    return { data: null, error: error.message };
   }
 
-  return data;
+  return { data, error: null };
 }
 
 // Delete job
-export async function deleteJob(token, { job_id }) {
-  const supabase = await supabaseClient(token);
+export async function deleteJob(
+  token: string | null | undefined,
+  options?: { job_id: number }
+): Promise<ApiResponse<Jobs>> {
+  const supabase = await supabaseClient(token!);
+
+  const { job_id } = options || {};
 
   const { data, error: deleteError } = await supabase
     .from("jobs")
     .delete()
-    .eq("id", job_id)
-    .select();
+    .eq("id", job_id!)
+    .select()
+    .returns<Jobs>();
 
   if (deleteError) {
     console.error("Error deleting job:", deleteError);
-    return data;
+    return { data: null, error: deleteError.message };
   }
 
-  return data;
+  return { data: data, error: null };
 }
 
 // Read Saved Jobs
-export async function getSavedJobs(token: string | undefined | null) {
+export async function getSavedJobs(
+  token: string | undefined | null
+): Promise<ApiResponse<SavedJobsResponse[]>> {
   const supabase = await supabaseClient(token!);
   const { data, error } = await supabase
     .from("saved_jobs")
-    .select("*, job: jobs(*, company: companies(name,logo_url))");
+    .select("*, job: jobs(*, company: companies(name,logo_url))")
+    .returns<SavedJobsResponse[]>();
 
   if (error) {
     console.error("Error fetching Saved Jobs:", error);
-    return null;
+    return { data: null, error: error.message };
   }
 
-  return data;
+  return { data, error: null };
 }

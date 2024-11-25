@@ -23,6 +23,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { BarLoader } from "react-spinners";
 import { z } from "zod";
 import { State } from "country-state-city";
+import { Jobs } from "../types/supabase.types";
 
 const schema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -31,6 +32,8 @@ const schema = z.object({
   company_id: z.string().min(1, { message: "Select or Add a new Company" }),
   requirements: z.string().min(1, { message: "Requirements are required" }),
 });
+
+type Schema = z.infer<typeof schema>;
 
 const PostJob = () => {
   const { user, isLoaded } = useUser();
@@ -41,32 +44,33 @@ const PostJob = () => {
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm({
+  } = useForm<Schema>({
     defaultValues: { location: "", company_id: "", requirements: "" },
     resolver: zodResolver(schema),
   });
 
   const {
-    loading: loadingCreateJob,
+    isLoading: loadingCreateJob,
     error: errorCreateJob,
     data: dataCreateJob,
     fn: fnCreateJob,
-  } = useFetch(addNewJob);
+  } = useFetch<Jobs, undefined, [Partial<Jobs>]>(addNewJob);
 
-  const onSubmit = (data) => {
+  const onSubmit = (data: Schema) => {
     fnCreateJob({
       ...data,
-      recruiter_id: user.id,
+      recuirter_id: user!.id as string,
       isOpen: true,
     });
   };
 
   useEffect(() => {
-    if (dataCreateJob?.length > 0) navigate("/jobs");
+    if (dataCreateJob) navigate("/jobs");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingCreateJob]);
 
   const {
-    loading: loadingCompanies,
+    isLoading: loadingCompanies,
     data: companies,
     fn: fnCompanies,
   } = useFetch(getCompanies);
@@ -140,7 +144,7 @@ const PostJob = () => {
                 <SelectContent>
                   <SelectGroup>
                     {companies?.map(({ name, id }) => (
-                      <SelectItem key={name} value={id}>
+                      <SelectItem key={name} value={String(id)}>
                         {name}
                       </SelectItem>
                     ))}
@@ -168,12 +172,8 @@ const PostJob = () => {
         {errors.requirements && (
           <p className="text-red-500">{errors.requirements.message}</p>
         )}
-        {errors.errorCreateJob && (
-          <p className="text-red-500">{errors?.errorCreateJob?.message}</p>
-        )}
-        {errorCreateJob?.message && (
-          <p className="text-red-500">{errorCreateJob?.message}</p>
-        )}
+
+        {errorCreateJob && <p className="text-red-500">{errorCreateJob}</p>}
         {loadingCreateJob && <BarLoader width={"100%"} color="#36d7b7" />}
         <Button type="submit" variant="blue" size="lg" className="mt-2">
           Submit

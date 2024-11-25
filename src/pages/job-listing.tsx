@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { fetchJobs } from "../api/jobs";
 import { useUser } from "@clerk/clerk-react";
 import { useFetch } from "../hooks/useFetch";
@@ -17,6 +17,7 @@ const JobListing = () => {
 
   useEffect(() => {
     if (isLoaded) getJobs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded]);
 
   if (!isLoaded) {
@@ -38,7 +39,7 @@ const JobListing = () => {
             <JobCard
               job={job}
               key={job.id}
-              savedInit={job.saved.length > 0}
+              savedInit={job.saved ? job.saved.length > 0 : false}
               isMyJob={false}
               onJobAction={getJobs}
             />

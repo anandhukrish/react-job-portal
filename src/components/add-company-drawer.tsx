@@ -16,6 +16,7 @@ import { useFetch } from "../hooks/useFetch";
 import { addNewCompany } from "../api/companies";
 import { BarLoader } from "react-spinners";
 import { useEffect } from "react";
+import { Companies } from "../types/supabase.types";
 
 const schema = z.object({
   name: z.string().min(1, { message: "Company name is required" }),
@@ -31,23 +32,28 @@ const schema = z.object({
     ),
 });
 
-const AddCompanyDrawer = ({ fetchCompanies }) => {
+export type CompanySchema = z.infer<typeof schema>;
+
+type AddCompanyDrawerProps = {
+  fetchCompanies: () => void;
+};
+const AddCompanyDrawer = ({ fetchCompanies }: AddCompanyDrawerProps) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<CompanySchema>({
     resolver: zodResolver(schema),
   });
 
   const {
-    loading: loadingAddCompany,
+    isLoading: loadingAddCompany,
     error: errorAddCompany,
     data: dataAddCompany,
     fn: fnAddCompany,
-  } = useFetch(addNewCompany);
+  } = useFetch<Companies, undefined, [CompanySchema]>(addNewCompany);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: CompanySchema) => {
     fnAddCompany({
       ...data,
       logo: data.logo[0],
@@ -55,9 +61,10 @@ const AddCompanyDrawer = ({ fetchCompanies }) => {
   };
 
   useEffect(() => {
-    if (dataAddCompany?.length > 0) {
+    if (dataAddCompany) {
       fetchCompanies();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingAddCompany]);
 
   return (
@@ -95,10 +102,14 @@ const AddCompanyDrawer = ({ fetchCompanies }) => {
         </form>
         <DrawerFooter>
           {errors.name && <p className="text-red-500">{errors.name.message}</p>}
-          {errors.logo && <p className="text-red-500">{errors.logo.message}</p>}
-          {errorAddCompany?.message && (
-            <p className="text-red-500">{errorAddCompany?.message}</p>
+          {errors.logo && (
+            <p className="text-red-500">
+              {typeof errors.logo.message === "string"
+                ? errors.logo.message
+                : ""}
+            </p>
           )}
+          {errorAddCompany && <p className="text-red-500">{errorAddCompany}</p>}
           {loadingAddCompany && <BarLoader width={"100%"} color="#36d7b7" />}
           <DrawerClose asChild>
             <Button type="button" variant="secondary">

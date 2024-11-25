@@ -17,9 +17,10 @@ import { updateApplicationStatus } from "../api/application";
 import { useFetch } from "../hooks/useFetch";
 import { BarLoader } from "react-spinners";
 import { Application, StatusEnum } from "../types/supabase.types";
+import { ApplicationResponse } from "../types/relation.types";
 
 type ApplicationCardProps = {
-  application: Application;
+  application: ApplicationResponse;
   isCandidate?: boolean;
 };
 
@@ -55,7 +56,7 @@ const ApplicationCard = ({
       <CardHeader>
         <CardTitle className="flex justify-between font-bold">
           {isCandidate
-            ? `${application?.job?.title} at ${application?.job?.company?.name}`
+            ? `${application?.job_details?.title} at ${application?.job_details?.company?.name}`
             : application?.name}
           <Download
             size={18}

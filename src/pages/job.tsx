@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useParams } from "react-router";
 import { useFetch } from "../hooks/useFetch";
 import { getSingleJob, updateJobHiringStatus } from "../api/jobs";
@@ -12,6 +12,7 @@ import { cn } from "../lib/utils";
 import ApplyJobDrawer from "../components/apply-job-drawer";
 import { SingleJobQueryResponse } from "../types/relation.types";
 import ApplicationCard from "../components/application-card";
+import { Jobs } from "../types/supabase.types";
 
 const Job = () => {
   const { id } = useParams();
@@ -25,12 +26,11 @@ const Job = () => {
     job_id: Number(id!),
   });
 
-  const {
-    data: status,
-    fn: updteJobStatusFn,
-    error: updateJobError,
-    isLoading: updateJobLoading,
-  } = useFetch(updateJobHiringStatus, { job_id: id });
+  const { fn: updteJobStatusFn, error: updateJobError } = useFetch<
+    Jobs,
+    { job_id: number },
+    [isOpen: boolean]
+  >(updateJobHiringStatus, { job_id: Number(id) });
 
   const { user, isLoaded } = useUser();
 
@@ -45,6 +45,9 @@ const Job = () => {
 
   if (!isLoaded || singleJobLoading)
     return <BarLoader className="mb-4" width={"100%"} color="#36d7b7" />;
+
+  if (singleJobError || updateJobError)
+    return <div>{singleJobError ? singleJobError : updateJobError}</div>;
 
   return (
     <div>

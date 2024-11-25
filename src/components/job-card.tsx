@@ -10,15 +10,16 @@ import { Heart, MapPinIcon, Trash2Icon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useFetch } from "../hooks/useFetch";
-import { savedJobs } from "../api/jobs";
+import { deleteJob, savedJobs } from "../api/jobs";
 import { useUser } from "@clerk/clerk-react";
 import { JobQueryResponse } from "../types/relation.types";
-import { SavedJobs } from "../types/supabase.types";
+import { Jobs, SavedJobs } from "../types/supabase.types";
+import { BarLoader } from "react-spinners";
 
 type JobCardProps = {
   job: JobQueryResponse;
   isMyJob?: boolean;
-  savedInit: boolean;
+  savedInit?: boolean;
   onJobAction: () => void;
 };
 
@@ -28,7 +29,7 @@ const JobCard = ({
   savedInit,
   onJobAction,
 }: JobCardProps) => {
-  const [saved, setSaved] = useState(savedInit);
+  const [saved, setSaved] = useState(savedInit ?? false);
 
   const { fn: saveFn, data: savedJob } = useFetch<
     SavedJobs[] | string,
@@ -40,6 +41,13 @@ const JobCard = ({
 
   const { user } = useUser();
 
+  const { isLoading: loadingDeleteJob, fn: fnDeleteJob } = useFetch<
+    Jobs,
+    { job_id: number }
+  >(deleteJob, {
+    job_id: job.id,
+  });
+
   const handleSavedJobs = async () => {
     if (user?.id) {
       await saveFn({
@@ -47,6 +55,10 @@ const JobCard = ({
         user_id: user?.id,
       });
     }
+    onJobAction();
+  };
+  const handleDeleteJob = async () => {
+    await fnDeleteJob();
     onJobAction();
   };
 
@@ -58,6 +70,9 @@ const JobCard = ({
 
   return (
     <Card>
+      {loadingDeleteJob && (
+        <BarLoader className="mt-4" width={"100%"} color="#36d7b7" />
+      )}
       <CardHeader>
         <CardTitle className="flex justify-between font-bold">
           {job.title}
@@ -66,6 +81,7 @@ const JobCard = ({
               fill="red"
               size={18}
               className="text-red-300 cursor-pointer"
+              onClick={handleDeleteJob}
             />
           )}
         </CardTitle>
