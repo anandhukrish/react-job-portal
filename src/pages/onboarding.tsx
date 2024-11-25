@@ -25,6 +25,7 @@ const Onboarding = () => {
     if (user?.unsafeMetadata?.role) {
       navigateUser(user.unsafeMetadata.role as string);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   if (!isLoaded) {

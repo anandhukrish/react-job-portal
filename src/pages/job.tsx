@@ -36,6 +36,7 @@ const Job = () => {
 
   useEffect(() => {
     if (isLoaded) singleJobFn();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded]);
 
   const handleStatusChange = (value: string) => {
